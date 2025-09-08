@@ -1,0 +1,321 @@
+
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classification Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+            background-color: #D2B48C; /* Light brown background */
+            color: #3E2C23; /* Dark brown text */
+        }
+    
+        img {
+            width: 80%;
+            max-width: 500px;
+            height: auto;
+            margin: 10px auto;
+            display: block;
+        }
+    
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #5C4033; /* Dark brown button */
+            color: #fff;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+    
+        button:hover {
+            background-color: #8B5E3C; /* Chocolate hover */
+        }
+    
+        .download-btn {
+            background-color: #8B5E3C; /* Accent green-like chocolate */
+        }
+    
+        .download-btn:hover {
+            background-color: #A0522D;
+        }
+    
+        input[type="text"] {
+            padding: 8px 12px;
+            font-size: 16px;
+            border: 2px solid #5C4033;
+            border-radius: 5px;
+            width: 250px;
+            background-color: #fff;
+            color: #5C4033;
+        }
+    
+        .form-inline {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+    
+        select {
+            font-size: 16px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 2px solid #5C4033;
+            background-color: #fff;
+            color: #5C4033;
+        }
+    
+        a.button {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            padding: 10px 20px;
+            background-color: #5C4033;
+            color: white;
+            border-radius: 5px;
+        }
+    
+        a.button:hover {
+            background-color: #8B5E3C;
+        }
+    
+        h1, h2, h3 {
+            color: #3E2C23;
+        }
+    
+        label {
+            font-weight: bold;
+        }
+    
+    </style>
+    
+</head>
+<body>
+
+    <h1>Classification Result</h1>
+
+    <h2>Uploaded Image :</h2>
+    <img src="{{ url_for('static', filename='uploads/' + filename) }}" alt="Uploaded Image">
+
+    {% if processed_filename %}
+        <h2>Processed Image :</h2>
+        <img src="{{ url_for('static', filename='processed/' + processed_filename) }}" alt="Processed Image">
+        
+        <!-- Download Button -->
+        <p>
+            <a href="{{ url_for('static', filename='processed/' + processed_filename) }}" download class="button">
+                <button class="download-btn">Download Processed Image</button>
+            </a>
+        </p>
+    {% endif %}
+
+    <h3><strong></strong> {{ label }}</h3>
+
+    <h2>Apply Effects</h2>
+    
+    
+    <!-- Black & White Dropdown -->
+<button>
+    Black & White:
+    <select onchange="applyEffect(this.value)">
+        <option value="">Select Level</option>
+        <option value="bw_low">Low</option>
+        <option value="bw_medium">Medium</option>
+        <option value="bw_high">High</option>
+    </select>
+</button>
+
+<!-- Increase Brightness Dropdown -->
+<button>
+    Increase Brightness:
+    <select onchange="applyEffect(this.value)">
+        <option value="">Select Level</option>
+        <option value="increase_brightness_low">Low</option>
+        <option value="increase_brightness_medium">Medium</option>
+        <option value="increase_brightness_high">High</option>
+    </select>
+</button>
+
+<!-- Decrease Brightness Dropdown -->
+<button>
+    Decrease Brightness:
+    <select onchange="applyEffect(this.value)">
+        <option value="">Select Level</option>
+        <option value="decrease_brightness_low">Low</option>
+        <option value="decrease_brightness_medium">Medium</option>
+        <option value="decrease_brightness_high">High</option>
+    </select>
+</button>
+
+<!-- Blur Background Dropdown -->
+<button>
+    Blur Background:
+    <select onchange="applyEffect(this.value)">
+        <option value="">Select Level</option>
+        <option value="blur_background_low">Low</option>
+        <option value="blur_background_medium">Medium</option>
+        <option value="blur_background_high">High</option>
+    </select>
+</button>
+
+<button>
+    Apply Filters:
+    <select onchange="applyEffect(this.value)">
+        <option value="">Select Filter</option>
+        <option value="filters_fresh">Fresh</option>
+        <option value="filters_cool">Cool</option>
+        <option value="filters_warm">Warm</option>
+        <option value="filters_sunset">Sunset</option>
+        <option value="filters_fade">Fade</option>
+    </select>
+</button>
+
+<button>
+    Vignette:
+    <select onchange="applyEffect(this.value)">
+        <option value="">Select Level</option>
+        <option value="vignette_low">Low</option>
+        <option value="vignette_medium">Medium</option>
+        <option value="vignette_high">High</option>
+    </select>
+</button>
+
+    <button>
+        Enhance Image:
+        <select id="enhanceLevel" onchange="applyEnhanceDropdown()">
+            <option value="">Select Level</option>
+            <option value="enhance_low">Low</option>
+            <option value="enhance_medium">Medium</option>
+            <option value="enhance_high">High</option>
+        </select>
+    </button>
+
+    <button>Rotate:
+         <select id="rotateDirection" onchange="rotateWithDropdown()">
+             <option value="">Select Direction</option>
+             <option value="rotate_0">Original</option>
+             <option value="rotate_90">Left</option>
+             <option value="rotate_180">Down</option>
+             <option value="rotate_270">Right</option>
+         </select>
+     </button>
+    
+    <script>
+        function applyEnhanceDropdown() {
+            const level = document.getElementById("enhanceLevel").value;
+            if (level) {
+                window.location.href = "/process/" + level + "/{{ filename }}";
+            }
+        }
+    </script>
+    
+    <button>
+        Sketch:
+        <select onchange="applySketch(this.value)">
+            <option value="">Select Style</option>
+            <option value="sketch_low">Low</option>
+            <option value="sketch_medium">Medium</option>
+            <option value="sketch_high">High</option>
+        </select>
+    </button>
+    <script>
+    function applySketch(style) {
+        if (style) {
+            window.location.href = "/process/" + style + "/{{ filename }}";
+        }
+    }
+    </script>
+    
+    <button >Apply Contrast
+    <select id="contrastLevel" onchange="applyContrast()">
+        <option value="">Select Level</option>
+        <option value="contrast_low">Low</option>
+        <option value="contrast_medium">Medium</option>
+        <option value="contrast_high">High</option>
+    </select>
+    <script>
+    function applyContrast() {
+        const level = document.getElementById("contrastLevel").value;
+        if (level) {
+            window.location.href = "/process/" + level + "/{{ filename }}";
+        }
+    }
+    </script>
+    
+    <button onclick="applyEffect('flip')">Flip</button>
+    <button onclick="applyEffect('sepia')">Sepia Effect</button>
+    <button onclick="applyEffect('adjust')">Auto Adjustment</button>
+
+
+
+    <h2>Choose Border Style</h2>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+
+        <button onclick="applyBorder('simple')">Simple Border</button>
+        <button onclick="applyBorder('double')">Double Border</button>
+        <button onclick="applyBorder('shadow')">Shadow Frame</button>
+        <button onclick="applyBorder('polaroid')">Polaroid</button>
+        <button onclick="applyBorder('circle')">Circle cut-out</button>
+        </div>
+
+    <script>
+        function applyBorder(style) {
+            window.location.href = "/border/" + style + "/{{ filename }}";
+        }
+    </script>
+
+
+
+    <h2>Tool Size (Crop Presets)</h2>
+        <form action="/crop_tool/{{ filename }}" method="POST">
+            <label for="crop_mode">Select Crop Size:</label>
+            <select name="crop_mode" id="crop_mode">
+            <option value="">Select size</option>
+            <option value="1:1">1:1</option>
+            <option value="3:4">3:4</option>
+            <option value="9:16">9:16</option>
+            <option value="full">Full</option>
+            </select>
+            <button type="submit" class="download-btn">Crop</button>
+        </form>
+
+
+    
+ 
+
+    <script>
+        function applyEffect(effect) {
+            window.location.href = "/process/" + effect + "/{{ filename }}";
+        }
+        function rotateWithDropdown() {
+            const direction = document.getElementById("rotateDirection").value;
+            if (direction) {
+                window.location.href = "/process/" + direction + "/{{ filename }}";
+            }
+        }
+    </script>
+
+<div class="form-inline">
+    <form action="/add_text/{{ filename }}" method="POST" style="display: inline-flex; gap: 10px;">
+        <input type="text" name="text" placeholder="Enter text to add..." required>
+        <button type="submit">Add Text</button>
+    </form>
+
+    <form action="/clear_text/{{ filename }}" method="POST" style="display: inline;">
+        <button type="submit">Clear Text</button>
+    </form>
+</div>
+
+    <p><a href="/" class="button">Go Back to Upload</a></p>
+
+</body>
+</html>
